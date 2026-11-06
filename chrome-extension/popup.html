@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Hub Relay</title>
+  <style>
+    :root {
+      --bg: #070b17;
+      --card: rgba(15, 23, 42, 0.85);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent-1: #7c3aed;
+      --accent-2: #0ea5e9;
+      --success: #4ade80;
+      --danger: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 370px;
+      min-height: 460px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 13px;
+      padding: 14px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .brand-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      font-size: 14px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 7px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: 0.15s;
+    }
+
+    .icon-btn:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      margin: 10px 0 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Quotas Grid & Quick Launch */
+    .providers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .provider-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.15s;
+      user-select: none;
+    }
+
+    .provider-card:hover {
+      border-color: var(--accent-2);
+      transform: translateY(-1px);
+    }
+
+    .provider-card.selected {
+      border-color: var(--accent-1);
+      background: rgba(124, 58, 237, 0.18);
+      box-shadow: 0 0 0 1px var(--accent-1);
+    }
+
+    .provider-name {
+      font-weight: 600;
+      font-size: 11px;
+      display: block;
+    }
+
+    .provider-count {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 3px;
+      display: block;
+    }
+
+    .provider-sub {
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    /* Relay Controls */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #fff;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      transition: 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.95;
+      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
+    .status-msg {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      line-height: 1.4;
+      display: none;
+    }
+
+    .status-msg.ok {
+      display: block;
+      background: rgba(74, 222, 128, 0.12);
+      border: 1px solid rgba(74, 222, 128, 0.35);
+      color: var(--success);
+    }
+
+    .status-msg.err {
+      display: block;
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: var(--danger);
+    }
+
+    .summary-preview {
+      margin-top: 8px;
+      max-height: 120px;
+      overflow-y: auto;
+      background: rgba(2, 6, 23, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 11px;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      display: none;
+    }
+
+    /* Recent History */
+    .history-list {
+      max-height: 115px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 9px;
+      border-radius: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .history-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+      padding-right: 6px;
+    }
+
+    .history-route {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .history-snippet {
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 230px;
+    }
+
+    /* Settings Drawer */
+    #settingsPanel {
+      display: none;
+    }
+
+    label.field-label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input.text-input {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.7);
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+
+    input.text-input:focus {
+      border-color: var(--accent-1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <span>AI Hub &amp; Context Relay</span>
+    </div>
+    <button id="toggleSettingsBtn" class="icon-btn" title="Configuration API">⚙️ Config</button>
+  </header>
+
+  <!-- Panneau de configuration (stocké dans chrome.storage.local) -->
+  <div id="settingsPanel" class="panel">
+    <label class="field-label" for="apiBaseUrl">URL du Backend VPS (sans slash final)</label>
+    <input id="apiBaseUrl" class="text-input" type="url" placeholder="https://votredomaine.fr">
+
+    <label class="field-label" for="apiToken">Secret Token (X-API-Token)</label>
+    <input id="apiToken" class="text-input" type="password" placeholder="Collez APP_SECRET_TOKEN ici">
+
+    <button id="saveSettingsBtn" class="btn-primary">Enregistrer la configuration</button>
+  </div>
+
+  <!-- Sélection de l'IA cible + Compteurs du jour (double-clic = accès direct /go/{provider}) -->
+  <div class="section-title">
+    <span>Cible &amp; Quotas du jour</span>
+    <span style="font-size:10px;text-transform:none;">(Clic = cibler · Double-clic = ouvrir)</span>
+  </div>
+  <div class="providers-grid" id="providersGrid">
+    <div class="provider-card selected" data-provider="claude">
+      <span class="provider-name">Claude</span>
+      <span class="provider-count" id="q-claude">0</span>
+      <span class="provider-sub">auj.</span>
+    </div>
+    <div class="provider-card" data-provider="chatgpt">
+      <span class="provider-name">ChatGPT</span>
+      <span class="provider-count" id="q-chatgpt">0</span>
+      <span class="provider-sub">auj.</span>
+    </div>
+    <div class="provider-card" data-provider="gemini">
+      <span class="provider-name">Gemini</span>
+      <span class="provider-count" id="q-gemini">0</span>
+      <span class="provider-sub">auj.</span>
+    </div>
+    <div class="provider-card" data-provider="mistral">
+      <span class="provider-name">Mistral</span>
+      <span class="provider-count" id="q-mistral">0</span>
+      <span class="provider-sub">auj.</span>
+    </div>
+  </div>
+
+  <!-- Action principale de Distillation & Handoff -->
+  <div class="panel">
+    <label class="checkbox-row">
+      <input type="checkbox" id="openTargetTab" checked>
+      <span>Ouvrir l'IA cible et pré-remplir le prompt distillé</span>
+    </label>
+    <button id="relayBtn" class="btn-primary">Distiller &amp; Transférer vers Claude →</button>
+    <div id="statusMsg" class="status-msg"></div>
+    <pre id="summaryPreview" class="summary-preview"></pre>
+  </div>
+
+  <!-- Derniers résumés enregistrés dans SQLite -->
+  <div class="section-title">
+    <span>Derniers contextes distillés</span>
+    <button id="refreshStatsBtn" class="icon-btn" style="padding:2px 6px;font-size:10px;">↻</button>
+  </div>
+  <div class="history-list" id="historyList">
+    <div style="color:var(--muted);text-align:center;padding:12px;font-size:11px;">
+      Aucun historique chargé.
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

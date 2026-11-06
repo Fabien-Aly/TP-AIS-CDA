@@ -1,0 +1,18 @@
+# Dépendances et builds
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+target/
+
+# Fichiers carnivores en tokens
+*.lock
+package-lock.json
+pnpm-lock.yaml
+*.log
+*.svg
+*.min.js
+*.map
+*.csv
+*.sqlite
